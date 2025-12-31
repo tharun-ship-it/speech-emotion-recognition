@@ -1,0 +1,153 @@
+# Speech Emotion Recognition - Training Configuration
+# Author: Tharun Ponnam
+
+# Model Configuration
+model:
+  name: "SER-Net"
+  variant: "base"  # Options: base, large
+  input_dim: 180
+  num_classes: 8
+  
+  # Architecture
+  conv_channels: [64, 128, 256]
+  kernel_sizes: [3, 5, 7]
+  dilation_rates: [1, 2, 4]
+  attention_heads: 8
+  attention_dim: 256
+  dropout: 0.3
+  
+  # Regularization
+  use_layer_norm: true
+  use_squeeze_excitation: true
+
+# Data Configuration
+data:
+  dataset: "msp-podcast"
+  data_dir: "data/msp-podcast"
+  
+  # Audio settings
+  sample_rate: 16000
+  max_duration: 10.0  # seconds
+  min_duration: 0.5
+  
+  # Feature extraction
+  n_mfcc: 40
+  n_mels: 128
+  hop_length: 512
+  n_fft: 2048
+  
+  # Processing
+  max_length: 300  # frames
+  normalize: true
+  
+  # Class labels
+  emotions:
+    - angry
+    - happy
+    - sad
+    - neutral
+    - fear
+    - disgust
+    - surprise
+    - contempt
+
+# Training Configuration
+training:
+  epochs: 100
+  batch_size: 64
+  
+  # Optimizer
+  optimizer: "adamw"
+  learning_rate: 0.001
+  weight_decay: 0.01
+  
+  # Learning rate schedule
+  scheduler: "warmup_cosine"
+  warmup_epochs: 5
+  min_lr: 1.0e-7
+  
+  # Loss function
+  loss: "focal"
+  focal_gamma: 2.0
+  focal_alpha: 0.25
+  label_smoothing: 0.1
+  
+  # Regularization
+  gradient_clip: 1.0
+  early_stopping_patience: 15
+  
+  # Mixed precision
+  use_mixed_precision: true
+
+# Augmentation Configuration
+augmentation:
+  enable: true
+  
+  # Audio augmentations
+  noise_injection:
+    enable: true
+    snr_range: [10, 30]
+  
+  pitch_shift:
+    enable: true
+    semitone_range: [-3, 3]
+  
+  time_stretch:
+    enable: true
+    rate_range: [0.8, 1.2]
+  
+  # Spectrogram augmentations
+  spec_augment:
+    enable: true
+    freq_mask_param: 20
+    time_mask_param: 50
+    num_freq_masks: 2
+    num_time_masks: 2
+  
+  # Mixup
+  mixup:
+    enable: true
+    alpha: 0.2
+
+# Evaluation Configuration
+evaluation:
+  metrics:
+    - accuracy
+    - unweighted_average_recall
+    - weighted_average_recall
+    - macro_f1
+    - confusion_matrix
+  
+  # Cross-validation
+  num_folds: 5
+  stratified: true
+
+# Logging Configuration
+logging:
+  log_dir: "logs"
+  save_dir: "models/checkpoints"
+  
+  # Checkpointing
+  save_best_only: true
+  save_freq: "epoch"
+  monitor: "val_uar"
+  mode: "max"
+  
+  # Experiment tracking
+  use_wandb: false
+  wandb_project: "speech-emotion-recognition"
+  use_tensorboard: true
+
+# Hardware Configuration
+hardware:
+  device: "auto"  # auto, cpu, gpu
+  num_workers: 4
+  prefetch_buffer: 2
+  
+  # Distributed training
+  distributed: false
+  strategy: "mirrored"
+
+# Reproducibility
+seed: 42
+deterministic: true
